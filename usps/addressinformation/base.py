@@ -1,5 +1,5 @@
 '''
-See http://www.usps.com/webtools/htm/Address-Information.htm for complete documentation of the API
+See https://www.usps.com/business/web-tools-apis/Address-Information-v3-2.htm for complete documentation of the API
 '''
 
 import urllib, urllib2
@@ -8,11 +8,13 @@ try:
 except ImportError:
     from elementtree import ElementTree as ET
 
+
 def utf8urlencode(data):
     ret = dict()
     for key, value in data.iteritems():
         ret[key] = value.encode('utf8')
     return urllib.urlencode(ret)
+
 
 def dicttoxml(dictionary, parent, tagname, attributes=None):
     element = ET.SubElement(parent, tagname)
@@ -24,16 +26,19 @@ def dicttoxml(dictionary, parent, tagname, attributes=None):
             ET.SubElement(element, key).text = value
     return element
 
+
 def xmltodict(element):
     ret = dict()
     for item in element.getchildren():
         ret[item.tag] = item.text
     return ret
 
+
 class USPSXMLError(Exception):
     def __init__(self, element):
         self.info = xmltodict(element)
         super(USPSXMLError, self).__init__(self.info['Description'])
+
 
 class USPSAddressService(object):
     SERVICE_NAME = None
@@ -41,7 +46,7 @@ class USPSAddressService(object):
     CHILD_XML_NAME = None
     PARAMETERS = None
     
-    def __init__(self, url):
+    def __init__(self, url='http://production.shippingapis.com/ShippingAPI.dll'):
         self.url = url
 
     def submit_xml(self, xml):
@@ -76,10 +81,41 @@ class USPSAddressService(object):
         xml = self.make_xml(userid, addresses)
         return self.parse_xml(self.submit_xml(xml))
 
-class AddressValidate(USPSAddressService):
+
+class Address(USPSAddressService):
+    """ Base Address class.
+
+
+    Address Formating Information from the USPS.
+
+    FirmName - Name of Business (XYZ Corp.) [Optional]
+    Address1 - Apartment or Suite number. [Optional]
+    Address2 - Street Address [Required]
+    City [Required]
+    State - Abbreviation (CO) [Required]
+    Zip5 - 5 Digit Zip Code [Required]
+    Zip4 - 4 Digit Zip Code [Optional]
+
+    This method will return a dictionary of values back from the USPS API.  The FullZip value
+    is computed.
+
+    {'City': 'Loveland', 'Address2': '500 E 3Rd St', 'State': 'CO', 'FullZip': '80537-5773', 'Zip5': '80537', 'Zip4': '5773'}
+
+    To call:
+
+    from usps.addressinformation import *
+
+
+    address_validation = Address(user_id='YOUR_USER_ID')
+    response = address_validation.validate(address1='500 E. third st', city='Loveland', state='CO')
+
+    If an address is invalid (Doesn't exist) will raise USPSXMLError
+
+    """
     SERVICE_NAME = 'AddressValidate'
     CHILD_XML_NAME = 'Address'
     API = 'Verify'
+    USER_ID = ''
     PARAMETERS = ['FirmName',
                   'Address1',
                   'Address2',
@@ -87,20 +123,37 @@ class AddressValidate(USPSAddressService):
                   'State',
                   'Zip5',
                   'Zip4',]
-    
-class ZipCodeLookup(USPSAddressService):
-    SERVICE_NAME = 'ZipCodeLookup'
-    CHILD_XML_NAME = 'Address'
-    API = 'ZipCodeLookup'
-    PARAMETERS = ['FirmName',
-                  'Address1',
-                  'Address2',
-                  'City',
-                  'State',]
 
-class CityStateLookup(USPSAddressService):
-    SERVICE_NAME = 'CityStateLookup'
-    CHILD_XML_NAME = 'ZipCode'
-    API = 'CityStateLookup'
-    PARAMETERS = ['Zip5',]
+    def __init__(self, user_id, *args, **kwargs):
+        super(Address, self).__init__(*args, **kwargs)
+        self.USER_ID = user_id
+
+    def format_response(self, address_dict):
+        """ Format the response with title case.  Ensures
+        that the address is "Human Readable"
+        """
+        try:
+            address_dict['Address1'] = address_dict['Address1'].title()
+        except KeyError:
+            pass
+        address_dict['Address2'] = address_dict['Address2'].title()
+        address_dict['City'] = address_dict['City'].title()
+        address_dict['FullZip'] = "%s-%s" % (address_dict['Zip5'], address_dict['Zip4'])
+
+        return address_dict
+
+    def validate(self, address1='', address2='', city='', state='', zip_5='', zip_4=''):
+        """ Validate provides a cleaner more verbose way to call the API.
+        Repackages the attributes
+        """
+        address_dict = {'Address1': address1,
+                        'Address2': address2,
+                        'City': city,
+                        'State': state,
+                        'Zip5': zip_5,
+                        'Zip4': zip_4}
+
+        valid_address = self.execute(self.USER_ID, [address_dict])
+        return self.format_response(valid_address[0])
+
 

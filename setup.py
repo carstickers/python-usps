@@ -7,9 +7,9 @@ LONG_DESC = """\
 A python wrapper to the USPS api, currently only supports the address information api
 """
 
-setup(name='python-usps',
+setup(name='python-usps2',
       version=VERSION,
-      description="A python wrapper to the USPS api, currently only supports the address information api",
+      description="A python wrapper to the USPS api, currently only supports address validation",
       long_description=LONG_DESC,
       classifiers=[
           'Programming Language :: Python',
@@ -20,15 +20,15 @@ setup(name='python-usps',
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
       ],
       keywords='usps api shipping',
-      author='Jason Kraus',
-      author_email='zbyte64@gmail.com',
-      maintainer = 'Jason Kraus',
-      maintainer_email = 'zbyte64@gmail.com',
-      url='http://github.com/cuker/python-usps',
+      author='Derek Stegelman',
+      author_email='email@stegelman.com',
+      maintainer = 'Derek Stegelman',
+      maintainer_email = 'email@stegelman.com',
+      url='http://github.com/dstegelman/python-usps',
       license='New BSD License',
-      packages=find_packages(exclude=['ez_setup', 'usps', 'tests']),
+      packages=find_packages(exclude=['usps']),
       zip_safe=False,
       install_requires=[
       ],
-      #test_suite='tests.test_suite',
+
       )

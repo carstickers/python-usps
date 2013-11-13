@@ -1,3 +1,7 @@
 *.pyc
 *~
 
+run.py
+.idea
+*.egg-info/
+dist/
