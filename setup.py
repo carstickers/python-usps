@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '0.1'
 LONG_DESC = """\
 A python wrapper to the USPS api, currently only supports address validation
 """
@@ -15,7 +15,7 @@ setup(name='python-usps2',
           'Programming Language :: Python',
           'Operating System :: OS Independent',
           'Natural Language :: English',
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
       ],
