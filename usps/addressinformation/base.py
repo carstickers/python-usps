@@ -132,21 +132,25 @@ class Address(USPSAddressService):
         """ Format the response with title case.  Ensures
         that the address is "Human Readable"
         """
-        try:
+
+        if 'Address1' in address_dict:
             address_dict['Address1'] = address_dict['Address1'].title()
-        except KeyError:
-            pass
+
+        if 'FirmName' in address_dict:
+            address_dict['FirmName'] = address_dict['FirmName'].title()
+
         address_dict['Address2'] = address_dict['Address2'].title()
         address_dict['City'] = address_dict['City'].title()
         address_dict['FullZip'] = "%s-%s" % (address_dict['Zip5'], address_dict['Zip4'])
 
         return address_dict
 
-    def validate(self, address1='', address2='', city='', state='', zip_5='', zip_4=''):
+    def validate(self, firm_name='', address1='', address2='', city='', state='', zip_5='', zip_4=''):
         """ Validate provides a cleaner more verbose way to call the API.
         Repackages the attributes
         """
-        address_dict = {'Address1': address1,
+        address_dict = {'FirmName': firm_name,
+                        'Address1': address1,
                         'Address2': address2,
                         'City': city,
                         'State': state,
