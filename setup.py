@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 VERSION = '0.0.1'
 LONG_DESC = """\
-A python wrapper to the USPS api, currently only supports the address information api
+A python wrapper to the USPS api, currently only supports address validation
 """
 
 setup(name='python-usps2',

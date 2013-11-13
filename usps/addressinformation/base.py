@@ -50,8 +50,8 @@ class USPSAddressService(object):
         self.url = url
 
     def submit_xml(self, xml):
-        data = {'XML':ET.tostring(xml),
-                'API':self.API}
+        data = {'XML': ET.tostring(xml),
+                'API': self.API}
         response = urllib2.urlopen(self.url, utf8urlencode(data))
         root = ET.parse(response).getroot()
         if root.tag == 'Error':
@@ -60,15 +60,16 @@ class USPSAddressService(object):
         if error:
             raise USPSXMLError(error)
         return root
-    
-    def parse_xml(self, xml):
+
+    @staticmethod
+    def parse_xml(xml):
         items = list()
-        for item in xml.getchildren():#xml.findall(self.SERVICE_NAME+'Response'):
+        for item in xml.getchildren():
             items.append(xmltodict(item))
         return items
     
     def make_xml(self, userid, addresses):
-        root = ET.Element(self.SERVICE_NAME+'Request')
+        root = ET.Element(self.SERVICE_NAME + 'Request')
         root.attrib['USERID'] = userid
         index = 0
         for address_dict in addresses:
