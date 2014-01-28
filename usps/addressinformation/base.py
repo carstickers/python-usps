@@ -57,7 +57,7 @@ class USPSAddressService(object):
         if root.tag == 'Error':
             raise USPSXMLError(root)
         error = root.find('.//Error')
-        if error:
+        if len(error):
             raise USPSXMLError(error)
         return root
 
