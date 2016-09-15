@@ -129,24 +129,26 @@ class Address(USPSAddressService):
         super(Address, self).__init__(*args, **kwargs)
         self.USER_ID = user_id
 
-    def format_response(self, address_dict):
+    def format_response(self, address_dict, title_case):
         """ Format the response with title case.  Ensures
         that the address is "Human Readable"
         """
 
-        if 'Address1' in address_dict:
-            address_dict['Address1'] = address_dict['Address1'].title()
+        if title_case:
+            if 'Address1' in address_dict:
+                address_dict['Address1'] = address_dict['Address1'].title()
 
-        if 'FirmName' in address_dict:
-            address_dict['FirmName'] = address_dict['FirmName'].title()
+            if 'FirmName' in address_dict:
+                address_dict['FirmName'] = address_dict['FirmName'].title()
 
-        address_dict['Address2'] = address_dict['Address2'].title()
-        address_dict['City'] = address_dict['City'].title()
+            address_dict['Address2'] = address_dict['Address2'].title()
+            address_dict['City'] = address_dict['City'].title()
         address_dict['FullZip'] = "%s-%s" % (address_dict['Zip5'], address_dict['Zip4'])
 
         return address_dict
 
-    def validate(self, firm_name='', address1='', address2='', city='', state='', zip_5='', zip_4=''):
+    def validate(self, firm_name='', address1='', address2='', city='', state='', zip_5='', zip_4='',
+                 title_case=False):
         """ Validate provides a cleaner more verbose way to call the API.
         Repackages the attributes
         """
@@ -159,6 +161,4 @@ class Address(USPSAddressService):
                         'Zip4': zip_4}
 
         valid_address = self.execute(self.USER_ID, [address_dict])
-        return self.format_response(valid_address[0])
-
-
+        return self.format_response(valid_address[0], title_case)
