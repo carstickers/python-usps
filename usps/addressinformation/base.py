@@ -45,8 +45,8 @@ class USPSAddressService(object):
     API = None
     CHILD_XML_NAME = None
     PARAMETERS = None
-    
-    def __init__(self, url='http://production.shippingapis.com/ShippingAPI.dll'):
+
+    def __init__(self, url='https://secure.shippingapis.com/ShippingAPI.dll'):
         self.url = url
 
     def submit_xml(self, xml):
