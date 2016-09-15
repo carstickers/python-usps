@@ -2,7 +2,14 @@
 See https://www.usps.com/business/web-tools-apis/Address-Information-v3-2.htm for complete documentation of the API
 '''
 
-import urllib, urllib2
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 try:
     from xml.etree import ElementTree as ET
 except ImportError:
@@ -11,9 +18,12 @@ except ImportError:
 
 def utf8urlencode(data):
     ret = dict()
-    for key, value in data.iteritems():
-        ret[key] = value.encode('utf8')
-    return urllib.urlencode(ret)
+    for key, value in data.items():
+        try:
+            ret[key] = value.encode('utf8')
+        except AttributeError:
+            ret[key] = value
+    return urlencode(ret).encode('utf8')
 
 
 def dicttoxml(dictionary, parent, tagname, attributes=None):
@@ -22,7 +32,7 @@ def dicttoxml(dictionary, parent, tagname, attributes=None):
         for key in attributes:
             ET.SubElement(element, key).text = dictionary.get(key, '')
     else:
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             ET.SubElement(element, key).text = value
     return element
 
@@ -52,7 +62,7 @@ class USPSAddressService(object):
     def submit_xml(self, xml):
         data = {'XML': ET.tostring(xml),
                 'API': self.API}
-        response = urllib2.urlopen(self.url, utf8urlencode(data))
+        response = urlopen(self.url, utf8urlencode(data))
         root = ET.parse(response).getroot()
         if root.tag == 'Error':
             raise USPSXMLError(root)
