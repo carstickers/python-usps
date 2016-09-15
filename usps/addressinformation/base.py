@@ -77,7 +77,7 @@ class USPSAddressService(object):
         for item in xml.getchildren():
             items.append(xmltodict(item))
         return items
-    
+
     def make_xml(self, userid, addresses):
         root = ET.Element(self.SERVICE_NAME + 'Request')
         root.attrib['USERID'] = userid
@@ -87,7 +87,7 @@ class USPSAddressService(object):
             address_xml.attrib['ID'] = str(index)
             index += 1
         return root
-    
+
     def execute(self, userid, addresses):
         xml = self.make_xml(userid, addresses)
         return self.parse_xml(self.submit_xml(xml))
@@ -153,7 +153,11 @@ class Address(USPSAddressService):
 
             address_dict['Address2'] = address_dict['Address2'].title()
             address_dict['City'] = address_dict['City'].title()
-        address_dict['FullZip'] = "%s-%s" % (address_dict['Zip5'], address_dict['Zip4'])
+        if address_dict['Zip4']:
+            address_dict['FullZip'] = "%s-%s" % (
+                address_dict['Zip5'], address_dict['Zip4'])
+        else:
+            address_dict['FullZip'] = address_dict['Zip5']
 
         return address_dict
 
