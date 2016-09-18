@@ -2,7 +2,14 @@
 See https://www.usps.com/business/web-tools-apis/Address-Information-v3-2.htm for complete documentation of the API
 '''
 
-import urllib, urllib2
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 try:
     from xml.etree import ElementTree as ET
 except ImportError:
@@ -11,9 +18,12 @@ except ImportError:
 
 def utf8urlencode(data):
     ret = dict()
-    for key, value in data.iteritems():
-        ret[key] = value.encode('utf8')
-    return urllib.urlencode(ret)
+    for key, value in data.items():
+        try:
+            ret[key] = value.encode('utf8')
+        except AttributeError:
+            ret[key] = value
+    return urlencode(ret).encode('utf8')
 
 
 def dicttoxml(dictionary, parent, tagname, attributes=None):
@@ -22,7 +32,7 @@ def dicttoxml(dictionary, parent, tagname, attributes=None):
         for key in attributes:
             ET.SubElement(element, key).text = dictionary.get(key, '')
     else:
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             ET.SubElement(element, key).text = value
     return element
 
@@ -45,14 +55,14 @@ class USPSAddressService(object):
     API = None
     CHILD_XML_NAME = None
     PARAMETERS = None
-    
-    def __init__(self, url='http://production.shippingapis.com/ShippingAPI.dll'):
+
+    def __init__(self, url='https://secure.shippingapis.com/ShippingAPI.dll'):
         self.url = url
 
     def submit_xml(self, xml):
         data = {'XML': ET.tostring(xml),
                 'API': self.API}
-        response = urllib2.urlopen(self.url, utf8urlencode(data))
+        response = urlopen(self.url, utf8urlencode(data))
         root = ET.parse(response).getroot()
         if root.tag == 'Error':
             raise USPSXMLError(root)
@@ -67,7 +77,7 @@ class USPSAddressService(object):
         for item in xml.getchildren():
             items.append(xmltodict(item))
         return items
-    
+
     def make_xml(self, userid, addresses):
         root = ET.Element(self.SERVICE_NAME + 'Request')
         root.attrib['USERID'] = userid
@@ -77,7 +87,7 @@ class USPSAddressService(object):
             address_xml.attrib['ID'] = str(index)
             index += 1
         return root
-    
+
     def execute(self, userid, addresses):
         xml = self.make_xml(userid, addresses)
         return self.parse_xml(self.submit_xml(xml))
@@ -129,24 +139,30 @@ class Address(USPSAddressService):
         super(Address, self).__init__(*args, **kwargs)
         self.USER_ID = user_id
 
-    def format_response(self, address_dict):
+    def format_response(self, address_dict, title_case):
         """ Format the response with title case.  Ensures
         that the address is "Human Readable"
         """
 
-        if 'Address1' in address_dict:
-            address_dict['Address1'] = address_dict['Address1'].title()
+        if title_case:
+            if 'Address1' in address_dict:
+                address_dict['Address1'] = address_dict['Address1'].title()
 
-        if 'FirmName' in address_dict:
-            address_dict['FirmName'] = address_dict['FirmName'].title()
+            if 'FirmName' in address_dict:
+                address_dict['FirmName'] = address_dict['FirmName'].title()
 
-        address_dict['Address2'] = address_dict['Address2'].title()
-        address_dict['City'] = address_dict['City'].title()
-        address_dict['FullZip'] = "%s-%s" % (address_dict['Zip5'], address_dict['Zip4'])
+            address_dict['Address2'] = address_dict['Address2'].title()
+            address_dict['City'] = address_dict['City'].title()
+        if address_dict['Zip4']:
+            address_dict['FullZip'] = "%s-%s" % (
+                address_dict['Zip5'], address_dict['Zip4'])
+        else:
+            address_dict['FullZip'] = address_dict['Zip5']
 
         return address_dict
 
-    def validate(self, firm_name='', address1='', address2='', city='', state='', zip_5='', zip_4=''):
+    def validate(self, firm_name='', address1='', address2='', city='', state='', zip_5='', zip_4='',
+                 title_case=False):
         """ Validate provides a cleaner more verbose way to call the API.
         Repackages the attributes
         """
@@ -159,6 +175,4 @@ class Address(USPSAddressService):
                         'Zip4': zip_4}
 
         valid_address = self.execute(self.USER_ID, [address_dict])
-        return self.format_response(valid_address[0])
-
-
+        return self.format_response(valid_address[0], title_case)

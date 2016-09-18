@@ -13,6 +13,8 @@ setup(name='python-usps2',
       long_description=LONG_DESC,
       classifiers=[
           'Programming Language :: Python',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 3',
           'Operating System :: OS Independent',
           'Natural Language :: English',
           'Development Status :: 5 - Production/Stable',
