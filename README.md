@@ -1,6 +1,8 @@
 Python USPS
 ===========
 
+> Looking For Authors!  This project is currently looking for a user to take it over.  If that sounds like you, send a note to derek at stegelman dot com or open up an issue in this repository.
+
 This is a fork of the python-usps library https://github.com/cuker/python-usps.  A lot of the library
 was removed and refactored to be more simple as the only practical application of the USPS library thus
 far has been address validation.
