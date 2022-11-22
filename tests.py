@@ -131,7 +131,6 @@ class TestAddressInformationAPI(unittest.TestCase):
         })
 
         xml = rate.make_xml(package_dicts=[package_dict_one, package_dict_two])
-        print_xml(xml)
         response_xml = rate.submit_xml(xml)
         return_dict = xmltodict.parse(ElementTree.tostring(response_xml))
 
