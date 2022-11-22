@@ -5,3 +5,6 @@ run.py
 .idea
 *.egg-info/
 dist/
+/bin/
+/lib/
+/pyvenv.cfg
